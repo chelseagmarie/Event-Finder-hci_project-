@@ -6,6 +6,27 @@ import folium
 secret_key = "b4f78a34007609b69962e3e8257e1a80958f2db331713cc455e4e1253d13838b"
 client_ID = "MzMxMjE3NDd8MTY4MTY5MDQwMS4yMzM1MjE1"
 
+'''
+color_picker = st.color_picker('Pick A Color')
+'''
+
+st.sidebar.title("Sidebar")
+
+page_bg_color = """
+        <style>
+         [data-testid='stAppViewContainer'] > .main {
+         background-color: #7EA884;}
+         [data-testid="stSidebar"] > div:first-child {
+         background-color: #000000;}
+         [data-testid="stHeader"] {
+         background: rgba(0,0,0,0);
+         }
+         </style>
+         """
+st.markdown(page_bg_color, unsafe_allow_html= True)
+
+
+
 
 @st.cache_data
 def map_creator(latitude, longitude):
