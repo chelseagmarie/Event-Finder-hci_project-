@@ -97,6 +97,7 @@ def genres_available():
     genres_list.sort()
     return genres_list
 
+'''
 @st.cache_data
 def filter_perfomers_by_genre(genre):
     performers_set = set()
@@ -105,6 +106,17 @@ def filter_perfomers_by_genre(genre):
     for i in range(0,len(request["performers"])):
         performers_set.add(request["performers"][i]["name"])
     return performers_set
+'''
+
+@st.cache_data
+def concerts_happening_for_your_genre(genre):
+    '''have yet to add part about location'''
+    dude_set = set()
+    url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&type=concert&genres[primary].slug={genre}"
+    request = requests.get(url).json()
+    for i in range(0,len(request["events"])):
+        dude_set.add(request["events"][i]["title"])
+    return dude_set
 
 
 # Events
@@ -191,10 +203,10 @@ if check19:
 if check20:
     selected.append(genres_available()[20])
 
-st.write("performers for this genre(s)")
+st.write("Concerts happening for your genre!")
 
 for genre in selected:
-    st.write(filter_perfomers_by_genre(genre))
+    st.write(concerts_happening_for_your_genre(genre))
 
 
 
