@@ -6,6 +6,27 @@ import folium
 secret_key = "b4f78a34007609b69962e3e8257e1a80958f2db331713cc455e4e1253d13838b"
 client_ID = "MzMxMjE3NDd8MTY4MTY5MDQwMS4yMzM1MjE1"
 
+'''
+color_picker = st.color_picker('Pick A Color')
+'''
+
+st.sidebar.title("Sidebar")
+
+page_bg_color = """
+        <style>
+         [data-testid='stAppViewContainer'] > .main {
+         background-color: #7EA884;}
+         [data-testid="stSidebar"] > div:first-child {
+         background-color: #000000;}
+         [data-testid="stHeader"] {
+         background: rgba(0,0,0,0);
+         }
+         </style>
+         """
+st.markdown(page_bg_color, unsafe_allow_html= True)
+
+
+
 
 page_bg_color = """
         <style>
@@ -127,6 +148,16 @@ def concerts_happening_for_your_genre(genre,miles):
         return "Sorry. There are no events of this Genre in your area."
     return dude_list
 
+'''
+@st.cache_data
+def filter_perfomers_by_genre(genre):
+    performers_set = set()
+    url = f"https://api.seatgeek.com/2/performers?client_id={client_ID}&genres[primary].slug={genre}"
+    request = requests.get(url).json()
+    for i in range(0,len(request["performers"])):
+        performers_set.add(request["performers"][i]["name"])
+    return performers_set
+'''
 
 
 # Events
@@ -234,5 +265,9 @@ if loco =="Geolocation":
         st.write(concerts_happening_for_your_genre(genre,miles))
 
 
+        if city:
+            st.subheader("List of Venues Near you!")
+            st.write(venues_setlist(city))
+            map_creator(26, -80.15)
 
 
