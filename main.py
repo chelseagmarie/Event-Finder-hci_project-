@@ -167,6 +167,21 @@ if loco =="Geolocation":
             venues_set.add(request["venues"][i]["name"])
             venues.append(request["venues"][i]["name"])
     st.info(f"The venues near you are {venues}")
+    
+if loco == "Coordinates":
+    venues= []
+    venues_set = set()
+    miles = st.select_slider("Select a distance (Mi.)",options=[5,10,15,20,25,30,35,40,45,50,55,60])
+    lat = st.text_input("Insert Lattitude:")
+    long = st.text_input("Insert Longitude:")
+    url=f"https://api.seatgeek.com/2/venues?client_id={client_ID}&geoip=true&range={miles}mi"
+    request=requests.get(url).json()
+    for i in range(0,len(request["venues"])):
+        if request["venues"][i]["name"] not in venues_set:
+            venues_set.add(request["venues"][i]["name"])
+            venues.append(request["venues"][i]["name"])
+    st.info(f"The venues near you are {venues}")
+    map_creator(lat, long)
 
 radio = st.sidebar.radio("Sort by:", ("Popularity","Date"))
 
