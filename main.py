@@ -6,25 +6,6 @@ import folium
 secret_key = "b4f78a34007609b69962e3e8257e1a80958f2db331713cc455e4e1253d13838b"
 client_ID = "MzMxMjE3NDd8MTY4MTY5MDQwMS4yMzM1MjE1"
 
-'''
-color_picker = st.color_picker('Pick A Color')
-'''
-
-page_bg_color = """
-        <style>
-         [data-testid='stAppViewContainer'] > .main {
-         background-color: #7EA884;}
-         [data-testid="stSidebar"] > div:first-child {
-         background-color: #000000;}
-         [data-testid="stHeader"] {
-         background: rgba(0,0,0,0);
-         }
-         </style>
-         """
-st.markdown(page_bg_color, unsafe_allow_html= True)
-
-
-
 
 page_bg_color = """
         <style>
@@ -128,14 +109,14 @@ def genres_available():
     return genres_list
 
 @st.cache_data
-def concerts_happening_for_your_genre(genre,miles):
+def concerts_happening_for_your_genre(genre, miles, sort):
     '''have yet to add part about location'''
     dude_set = set()
     dude_list=[]
     if miles:
-        url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&range={miles}mi&type=concert&genres[primary].slug={genre}"
+        url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&range={miles}mi&type=concert&genres[primary].slug={genre}&sort={sort}"
     else:
-        url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}"
+        url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&sort={sort}"
     request = requests.get(url).json()
     #st.write(request)
     for i in range(0,len(request["events"])):
@@ -156,7 +137,6 @@ def filter_perfomers_by_genre(genre):
         performers_set.add(request["performers"][i]["name"])
     return performers_set
 '''
-
 
 # Events
 st.title("Events Near You!")
@@ -202,6 +182,13 @@ if loco == "Coordinates":
             venues.append(request["venues"][i]["name"])
     st.info(f"The venues near you are {venues}")
     map_creator(lat, long)
+
+radio = st.sidebar.radio("Sort by:", ("Popularity","Date"))
+
+if radio == "Popularity":
+    sort = "score.desc"
+elif radio == "Date":
+    sort = "datetime_local.desc"
 
 st.sidebar.write("Check Genre(s) of Interest")
 check0 = st.sidebar.checkbox(genres_available()[0])
@@ -273,7 +260,7 @@ if check20:
 st.write("Concerts happening for your genre!")
 
 for genre in selected:
-    st.write(concerts_happening_for_your_genre(genre,miles))
+    st.write(concerts_happening_for_your_genre(genre,miles=None,sort=sort))
 
 
 
