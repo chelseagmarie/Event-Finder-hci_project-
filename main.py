@@ -6,27 +6,6 @@ import folium
 secret_key = "b4f78a34007609b69962e3e8257e1a80958f2db331713cc455e4e1253d13838b"
 client_ID = "MzMxMjE3NDd8MTY4MTY5MDQwMS4yMzM1MjE1"
 
-'''
-color_picker = st.color_picker('Pick A Color')
-'''
-
-st.sidebar.title("Sidebar")
-
-page_bg_color = """
-        <style>
-         [data-testid='stAppViewContainer'] > .main {
-         background-color: #7EA884;}
-         [data-testid="stSidebar"] > div:first-child {
-         background-color: #000000;}
-         [data-testid="stHeader"] {
-         background: rgba(0,0,0,0);
-         }
-         </style>
-         """
-st.markdown(page_bg_color, unsafe_allow_html= True)
-
-
-
 
 page_bg_color = """
         <style>
@@ -148,22 +127,13 @@ def concerts_happening_for_your_genre(genre,miles):
         return "Sorry. There are no events of this Genre in your area."
     return dude_list
 
-'''
-@st.cache_data
-def filter_perfomers_by_genre(genre):
-    performers_set = set()
-    url = f"https://api.seatgeek.com/2/performers?client_id={client_ID}&genres[primary].slug={genre}"
-    request = requests.get(url).json()
-    for i in range(0,len(request["performers"])):
-        performers_set.add(request["performers"][i]["name"])
-    return performers_set
-'''
 
 
 # Events
 st.title("Events Near You!")
 
 st.sidebar.title("Sidebar")
+
 
 loco=st.sidebar.selectbox("Search By",options={"","Location(Country,State,City)","Geolocation","Coordinates"})
 if loco=="Location(Country,State,City)":
@@ -183,7 +153,7 @@ if loco=="Location(Country,State,City)":
 if loco =="Geolocation":
     venues=[]
     venues_set=set()
-    miles=st.select_slider("Select a distance (Mi.)",options=[5,10,15,20,25,30,35,40,45,50,55,60])
+    miles=st.select_slider("Select a distance (Mi.)",options=[5,10,15,20,25,30,35,40,45,50,55,60],value=30)
     url=f"https://api.seatgeek.com/2/venues?client_id={client_ID}&geoip=true&range={miles}mi"
     request=requests.get(url).json()
     for i in range(0,len(request["venues"])):
@@ -264,10 +234,5 @@ if loco =="Geolocation":
     for genre in selected:
         st.write(concerts_happening_for_your_genre(genre,miles))
 
-
-        if city:
-            st.subheader("List of Venues Near you!")
-            st.write(venues_setlist(city))
-            map_creator(26, -80.15)
-
+prices=st.sidebar.slider("Select a Ticket Price: ",0,10000)
 
