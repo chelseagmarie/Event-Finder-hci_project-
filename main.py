@@ -203,7 +203,6 @@ def filter_perfomers_by_genre(genre):
 # Events
 st.title("Events Near You!")
 miles = st.sidebar.slider(label="Select a distance (Mi.):",min_value=5,max_value=100,value=30,step=5)
-
 @st.cache_data
 def display(selected,geoip,state,city):
     st.header("Concerts happening for your genre(s)!")
@@ -223,10 +222,6 @@ if radio == "Popularity":
     sort = "score.desc"
 elif radio == "Date":
     sort = "datetime_local.desc"
-    month = st.text_input("Insert Month in MM format:")
-    year = st.text_input("Insert year in YYYY format:")
-    url = f'https://api.seatgeek.com/2/events?client_id={client_ID}&{sort}'
-
     # st.info(f"Events during that month are {get_event_date(sort, month, year)}")
 
 @st.cache_data
@@ -304,7 +299,7 @@ check17 = st.sidebar.checkbox(genres_available()[17])
 check18 = st.sidebar.checkbox(genres_available()[18])
 check19 = st.sidebar.checkbox(genres_available()[19])
 check20 = st.sidebar.checkbox(genres_available()[20])
-
+date = st.sidebar.date_input("Confirm today's date")
 
 if check0:
     selected.append(genres_available()[0])
@@ -359,19 +354,12 @@ if loco=="Location(Country,State,City)":
 
         if state:
             city = st.selectbox("Select a City: ", options=get_city(state))
-
-            if city:
+            confirm = st.button("Confirm")
+            if confirm:
                 st.subheader("List of Venues Near you!")
                 st.write(f"The venues near you are {venues_setlist(city)}")
                 map_creator(venues_setlist_coord(city))
-<<<<<<< HEAD
-                url = f"https://api.seatgeek.com/2/venues?client_id={client_ID}&city={city}"
-                display(selected)
-                date_sorting(url)
-                
-=======
                 display(selected,geoip,state,city)
->>>>>>> main
 
 if loco =="Geolocation":
     geoip=True
@@ -390,10 +378,4 @@ if loco =="Geolocation":
     st.info(f"The venues near you are {venues}")
     locations = [(lat, lon) for lat, lon in Location_Dict.items()]
     map_creator(locations)
-<<<<<<< HEAD
-    display(selected)
-    date_sorting(url)
-=======
     display(selected,geoip,state=None,city=None)
-
->>>>>>> main
