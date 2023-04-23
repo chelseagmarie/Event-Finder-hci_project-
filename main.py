@@ -80,7 +80,6 @@ def get_event_date(sort, month, year):
     url = f'https://api.seatgeek.com/2/events?client_id={client_ID}&{sort}.gte={year}-{month}-01&{sort}.lte={year}-{month}-30'
     info = requests.get(url).json()
     for i in range(0, len(info["events"])):
-    
         events_set.add(info["events"][i]["name"])
 
     return events_set
@@ -179,12 +178,20 @@ if radio == "Popularity":
     sort = "score.desc"
 elif radio == "Date":
     sort = "datetime_local.desc"
-    month = st.number_input("Insert Month in MM format:")
-    year = st.number_input("Insert year in YYYY format:")
-    url = f'https://api.seatgeek.com/2/events?client_id={client_ID}&{sort}.gte={year}-{month}-01&{sort}.lte={year}-{month}-30'
+    month = st.text_input("Insert Month in MM format:")
+    year = st.text_input("Insert year in YYYY format:")
+    url = f'https://api.seatgeek.com/2/events?client_id={client_ID}&{sort}'
 
-    st.info(f"Events during that month are {get_event_date(sort, month, year)}")
+    # st.info(f"Events during that month are {get_event_date(sort, month, year)}")
 
+@st.cache_data
+def date_sorting(url):
+    date_set = set()
+    urlp2 = f"{url}&sort=datetime_local.desc"
+    for i in range(0,len(request["events"])):
+        if request["events"][i]["title"] not in date_set:
+            date_set.add(request["events"][i]["title"])
+    st.info(f"Events in order: {date_set}")
 
 # bar chart
 # number of performers in your area vs genre
@@ -304,7 +311,10 @@ if loco=="Location(Country,State,City)":
                 st.info(get_type(city))
                 st.selectbox("Event type: ", options=get_type(city))
                 map_creator(venues_setlist_coord(city))
+                url = f"https://api.seatgeek.com/2/venues?client_id={client_ID}&city={city}"
                 display(selected)
+                date_sorting(url)
+                
 
 if loco =="Geolocation":
     venues=[]
@@ -313,6 +323,7 @@ if loco =="Geolocation":
     #miles=st.select_slider("Select a distance (Mi.)",options=[5,10,15,20,25,30,35,40,45,50,55,60])
     url=f"https://api.seatgeek.com/2/venues?client_id={client_ID}&geoip=true&range={miles}mi"
     request=requests.get(url).json()
+    given = 'geoip=true&range={miles}mi'
     for i in range(0,len(request["venues"])):
         if request["venues"][i]["name"] not in venues_set:
             venues_set.add(request["venues"][i]["name"])
@@ -322,3 +333,4 @@ if loco =="Geolocation":
     locations = [(lat, lon) for lat, lon in Location_Dict.items()]
     map_creator(locations)
     display(selected)
+    date_sorting(url)
