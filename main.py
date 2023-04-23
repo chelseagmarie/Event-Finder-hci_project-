@@ -190,24 +190,13 @@ if radio == "Popularity":
 elif radio == "Date":
     sort = "datetime_local.desc"
 
-
-radio = st.sidebar.radio("Sort by:", ("Popularity","Date"))
-
-if radio == "Popularity":
-    sort = "score.desc"
-elif radio == "Date":
-    sort = "datetime_local.desc"
-
 # bar chart
 # number of performers in your area vs genre
 
 @st.cache_data
 def num_performers_in_area_per_genre(genre, miles):
     perf_set = set()
-    if miles:
-        url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&range={miles}mi&type=concert&genres[primary].slug={genre}"
-    else:
-        url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}"
+    url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&sort={sort}&range={miles}mi"
     request = requests.get(url).json()
     #st.write(request)
     for i in range(0,len(request["events"])):
