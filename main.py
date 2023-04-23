@@ -2,6 +2,8 @@ import streamlit as st
 import requests
 from streamlit_folium import folium_static
 import folium
+import pandas as pd
+import altair as alt
 
 secret_key = "b4f78a34007609b69962e3e8257e1a80958f2db331713cc455e4e1253d13838b"
 client_ID = "MzMxMjE3NDd8MTY4MTY5MDQwMS4yMzM1MjE1"
@@ -110,11 +112,10 @@ def genres_available():
 
 @st.cache_data
 def concerts_happening_for_your_genre(genre, miles, sort):
-    '''have yet to add part about location'''
     dude_set = set()
     dude_list=[]
 
-    url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&sort={sort}&range={miles}mi"
+    url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&sort={sort}"
     request = requests.get(url).json()
     #st.write(request)
     for i in range(0,len(request["events"])):
@@ -122,8 +123,9 @@ def concerts_happening_for_your_genre(genre, miles, sort):
             dude_set.add(request["events"][i]["title"])
             dude_list.append(request["events"][i]["title"])
     if not dude_list:
-        st.error("Sorry. There are no events of this Genre in your area.")
+        st.error(f"Sorry. There are no events of {genre} in your area.")
         return ""
+    st.info(genre)
     return dude_list
 
 
@@ -189,13 +191,40 @@ if radio == "Popularity":
 elif radio == "Date":
     sort = "datetime_local.desc"
 
+# bar chart
+# number of performers in your area vs genre
 
-radio = st.sidebar.radio("Sort by:", ("Popularity","Date"))
+@st.cache_data
+def num_performers_in_area_per_genre(genre, miles):
+    perf_set = set()
+    url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&sort={sort}"
+    request = requests.get(url).json()
+    #st.write(request)
+    for i in range(0,len(request["events"])):
+        if request["events"][i]["title"] not in perf_set:
+            perf_set.add(request["events"][i]["title"])
+    if not perf_set:
+        return 0
+    return len(perf_set)
+  
+def bar_chart(selected):
+    num_lst = []
+    genre_lst = []
+    for genre in selected:
+        genre_lst.append(genre)
+        num_lst.append(num_performers_in_area_per_genre(genre, miles= None))
 
-if radio == "Popularity":
-    sort = "score.desc"
-elif radio == "Date":
-    sort = "datetime_local.desc"
+    df = pd.DataFrame({
+        "Number of performers in your area" : num_lst,
+        "Genre" : genre_lst
+    })
+
+    chart = alt.Chart(df).mark_bar().encode(
+        y = 'Number of performers in your area:Q',
+        x = "Genre:O",
+    )
+    
+    return chart
 
 st.sidebar.write("Check Genre(s) of Interest")
 check0 = st.sidebar.checkbox(genres_available()[0])
@@ -267,5 +296,8 @@ if check20:
 st.write("Concerts happening for your genre!")
 
 for genre in selected:
-    st.write(concerts_happening_for_your_genre(genre,miles,sort=sort))
+    st.write(concerts_happening_for_your_genre(genre,miles=None,sort=sort))
+
+if selected:
+    st.altair_chart(bar_chart(selected), use_container_width=True)
 
