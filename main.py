@@ -115,7 +115,7 @@ def concerts_happening_for_your_genre(genre, miles, sort):
     dude_set = set()
     dude_list=[]
 
-    url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&sort={sort}&range={miles}mi"
+    url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&sort={sort}"
     request = requests.get(url).json()
     #st.write(request)
     for i in range(0,len(request["events"])):
@@ -123,8 +123,9 @@ def concerts_happening_for_your_genre(genre, miles, sort):
             dude_set.add(request["events"][i]["title"])
             dude_list.append(request["events"][i]["title"])
     if not dude_list:
-        st.error("Sorry. There are no events of this Genre in your area.")
+        st.error(f"Sorry. There are no events of {genre} in your area.")
         return ""
+    st.info(genre)
     return dude_list
 
 
@@ -196,7 +197,9 @@ elif radio == "Date":
 @st.cache_data
 def num_performers_in_area_per_genre(genre, miles):
     perf_set = set()
-    url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&range={miles}mi"
+
+    url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&sort={sort}"
+
     request = requests.get(url).json()
     #st.write(request)
     for i in range(0,len(request["events"])):
@@ -297,5 +300,7 @@ st.write("Concerts happening for your genre!")
 for genre in selected:
     st.write(concerts_happening_for_your_genre(genre,miles=None,sort=sort))
 
-st.altair_chart(bar_chart(selected), use_container_width=True)
+if selected:
+    st.altair_chart(bar_chart(selected), use_container_width=True)
+
 
