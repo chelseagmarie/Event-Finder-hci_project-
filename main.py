@@ -190,6 +190,13 @@ if radio == "Popularity":
 elif radio == "Date":
     sort = "datetime_local.desc"
 
+radio = st.sidebar.radio("Sort by:", ("Popularity","Date"))
+
+if radio == "Popularity":
+    sort = "score.desc"
+elif radio == "Date":
+    sort = "datetime_local.desc"
+
 st.sidebar.write("Check Genre(s) of Interest")
 check0 = st.sidebar.checkbox(genres_available()[0])
 check1 = st.sidebar.checkbox(genres_available()[1])
