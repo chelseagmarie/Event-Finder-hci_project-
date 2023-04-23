@@ -81,7 +81,6 @@ def get_event_date(sort, month, year):
     url = f'https://api.seatgeek.com/2/events?client_id={client_ID}&{sort}.gte={year}-{month}-01&{sort}.lte={year}-{month}-30'
     info = requests.get(url).json()
     for i in range(0, len(info["events"])):
-    
         events_set.add(info["events"][i]["name"])
 
     return events_set
@@ -204,7 +203,6 @@ def filter_perfomers_by_genre(genre):
 # Events
 st.title("Events Near You!")
 miles = st.sidebar.slider(label="Select a distance (Mi.):",min_value=5,max_value=100,value=30,step=5)
-
 @st.cache_data
 def display(selected,geoip,state,city):
     st.header("Concerts happening for your genre(s)!")
@@ -224,12 +222,16 @@ if radio == "Popularity":
     sort = "score.desc"
 elif radio == "Date":
     sort = "datetime_local.desc"
-    month = st.number_input("Insert Month in MM format:")
-    year = st.number_input("Insert year in YYYY format:")
-    url = f'https://api.seatgeek.com/2/events?client_id={client_ID}&{sort}.gte={year}-{month}-01&{sort}.lte={year}-{month}-30'
+    # st.info(f"Events during that month are {get_event_date(sort, month, year)}")
 
-    st.info(f"Events during that month are {get_event_date(sort, month, year)}")
-
+@st.cache_data
+def date_sorting(url):
+    date_set = set()
+    urlp2 = f"{url}&sort=datetime_local.desc"
+    for i in range(0,len(request["events"])):
+        if request["events"][i]["title"] not in date_set:
+            date_set.add(request["events"][i]["title"])
+    st.info(f"Events in order: {date_set}")
 
 # bar chart
 # number of performers in your area vs genre
@@ -297,7 +299,7 @@ check17 = st.sidebar.checkbox(genres_available()[17])
 check18 = st.sidebar.checkbox(genres_available()[18])
 check19 = st.sidebar.checkbox(genres_available()[19])
 check20 = st.sidebar.checkbox(genres_available()[20])
-
+date = st.sidebar.date_input("Confirm today's date")
 
 if check0:
     selected.append(genres_available()[0])
@@ -352,8 +354,8 @@ if loco=="Location(Country,State,City)":
 
         if state:
             city = st.selectbox("Select a City: ", options=get_city(state))
-
-            if city:
+            confirm = st.button("Confirm")
+            if confirm:
                 st.subheader("List of Venues Near you!")
                 st.write(f"The venues near you are {venues_setlist(city)}")
                 map_creator(venues_setlist_coord(city))
@@ -367,6 +369,7 @@ if loco =="Geolocation":
     #miles=st.select_slider("Select a distance (Mi.)",options=[5,10,15,20,25,30,35,40,45,50,55,60])
     url=f"https://api.seatgeek.com/2/venues?client_id={client_ID}&geoip=true&range={miles}mi"
     request=requests.get(url).json()
+    given = 'geoip=true&range={miles}mi'
     for i in range(0,len(request["venues"])):
         if request["venues"][i]["name"] not in venues_set:
             venues_set.add(request["venues"][i]["name"])
@@ -376,4 +379,3 @@ if loco =="Geolocation":
     locations = [(lat, lon) for lat, lon in Location_Dict.items()]
     map_creator(locations)
     display(selected,geoip,state=None,city=None)
-
