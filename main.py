@@ -196,7 +196,7 @@ elif radio == "Date":
 @st.cache_data
 def num_performers_in_area_per_genre(genre, miles):
     perf_set = set()
-    url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&sort={sort}&range={miles}mi"
+    url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&range={miles}mi"
     request = requests.get(url).json()
     #st.write(request)
     for i in range(0,len(request["events"])):
