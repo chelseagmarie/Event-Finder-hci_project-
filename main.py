@@ -22,6 +22,7 @@ page_bg_color = """
          """
 st.markdown(page_bg_color, unsafe_allow_html= True)
 
+
 @st.cache_data
 def map_creator(locations):
     m = folium.Map(location=[locations[0][0], locations[0][1]], zoom_start=10)
@@ -170,10 +171,13 @@ def genres_available():
     return genres_list
 
 @st.cache_data
-def concerts_happening_for_your_genre(genre, miles, sort):
+def concerts_happening_for_your_genre(genre,sort,geoip,state,city):
     dude_set = set()
     dude_list=[]
-    url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&sort={sort}"
+    if geoip:
+        url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&sort={sort}"
+    else:
+        url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&type=concert&genres[primary].slug={genre}&sort={sort}&venue.state={state}&venue.city={city}"
     request = requests.get(url).json()
     #st.write(request)
     for i in range(0,len(request["events"])):
@@ -182,9 +186,9 @@ def concerts_happening_for_your_genre(genre, miles, sort):
             dude_list.append(request["events"][i]["title"])
     if not dude_list:
         st.error(f"Sorry. There are no events of {genre} in your area.")
-        return ""
-    st.info(genre)
-    return st.success(f" The {genre} events are {dude_list}")
+    else:
+        st.info(genre)
+        st.success(f" The {genre} events are {dude_list}")
 
 
 @st.cache_data
@@ -199,20 +203,19 @@ def filter_perfomers_by_genre(genre):
 
 # Events
 st.title("Events Near You!")
+miles = st.sidebar.slider(label="Select a distance (Mi.):",min_value=5,max_value=100,value=30,step=5)
 
 @st.cache_data
-def display(selected):
+def display(selected,geoip,state,city):
     st.header("Concerts happening for your genre(s)!")
     
     for genre in selected:
-        st.write(concerts_happening_for_your_genre(genre,miles=None,sort=sort))
+        concerts_happening_for_your_genre(genre,sort,geoip,state,city)
 
     if selected:
         st.header("Number of Performances Happening in Your Area for Your Genres")
-        st.altair_chart(bar_chart(selected), use_container_width=True)
+        st.altair_chart(bar_chart(selected,geoip,state,city), use_container_width=True)
 
-
-miles = st.sidebar.slider(label="Select a distance (Mi.):",min_value=5,max_value=100,value=30,step=5)
 loco=st.sidebar.selectbox("Search By",options={"","Location(Country,State,City)","Geolocation"})
 
 radio = st.sidebar.radio("Sort by:", ("Popularity","Date"))
@@ -232,9 +235,13 @@ elif radio == "Date":
 # number of performers in your area vs genre
 
 @st.cache_data
-def num_performers_in_area_per_genre(genre, miles):
+def num_performances_in_area_per_genre(genre, miles,geoip,state,city,sort):
     perf_set = set()
-    url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&sort={sort}"
+    if geoip:
+        url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&sort={sort}"
+    else:
+        url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&type=concert&genres[primary].slug={genre}&sort={sort}&venue.state={state}&venue.city={city}"
+
     request = requests.get(url).json()
     #st.write(request)
     for i in range(0,len(request["events"])):
@@ -245,14 +252,14 @@ def num_performers_in_area_per_genre(genre, miles):
     return len(perf_set)
   
 
-def bar_chart(selected):
+def bar_chart(selected,geoip,state,city):
     num_lst = []
     genre_lst = []
 
     if selected:
         for genre in selected:
             genre_lst.append(genre)
-            num_lst.append(num_performances_in_area_per_genre(genre, miles= None))
+            num_lst.append(num_performances_in_area_per_genre(genre, miles,geoip,state,city,sort=sort))
 
         df = pd.DataFrame({
             "Number of Performances in Your Area" : num_lst,
@@ -337,6 +344,7 @@ if check20:
 
 
 if loco=="Location(Country,State,City)":
+    geoip=False
     country = st.selectbox("Select a country: ", options=get_country())
 
     if country:
@@ -347,13 +355,12 @@ if loco=="Location(Country,State,City)":
 
             if city:
                 st.subheader("List of Venues Near you!")
-                st.write(venues_setlist(city))
-                st.info(get_type(city))
-                st.selectbox("Event type: ", options=get_type(city))
+                st.write(f"The venues near you are {venues_setlist(city)}")
                 map_creator(venues_setlist_coord(city))
-                display(selected)
+                display(selected,geoip,state,city)
 
 if loco =="Geolocation":
+    geoip=True
     venues=[]
     venues_set=set()
     Location_Dict = dict()
@@ -368,5 +375,5 @@ if loco =="Geolocation":
     st.info(f"The venues near you are {venues}")
     locations = [(lat, lon) for lat, lon in Location_Dict.items()]
     map_creator(locations)
-    display(selected)
+    display(selected,geoip,state=None,city=None)
 
