@@ -113,6 +113,7 @@ def concerts_happening_for_your_genre(genre, miles, sort):
     '''have yet to add part about location'''
     dude_set = set()
     dude_list=[]
+
     url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&sort={sort}&range={miles}mi"
     request = requests.get(url).json()
     #st.write(request)
@@ -135,12 +136,10 @@ def filter_perfomers_by_genre(genre):
         performers_set.add(request["performers"][i]["name"])
     return performers_set
 
-
 # Events
 st.title("Events Near You!")
 
 miles = st.sidebar.slider(label="Select a distance (Mi.):",min_value=5,max_value=100,value=30,step=5)
-
 loco=st.sidebar.selectbox("Search By",options={"","Location(Country,State,City)","Geolocation","Coordinates"})
 if loco=="Location(Country,State,City)":
     country = st.selectbox("Select a country: ", options=get_country())
@@ -171,7 +170,7 @@ if loco =="Geolocation":
 if loco == "Coordinates":
     venues= []
     venues_set = set()
-    #miles = st.select_slider("Select a distance (Mi.)",options=[5,10,15,20,25,30,35,40,45,50,55,60])
+    
     lat = st.text_input("Insert Lattitude:")
     long = st.text_input("Insert Longitude:")
     url=f"https://api.seatgeek.com/2/venues?client_id={client_ID}&geoip=true&range={miles}mi"
@@ -182,6 +181,14 @@ if loco == "Coordinates":
             venues.append(request["venues"][i]["name"])
     st.info(f"The venues near you are {venues}")
     map_creator(lat, long)
+
+radio = st.sidebar.radio("Sort by:", ("Popularity","Date"))
+
+if radio == "Popularity":
+    sort = "score.desc"
+elif radio == "Date":
+    sort = "datetime_local.desc"
+
 
 radio = st.sidebar.radio("Sort by:", ("Popularity","Date"))
 
@@ -258,7 +265,6 @@ if check20:
     selected.append(genres_available()[20])
 
 st.write("Concerts happening for your genre!")
-
 
 for genre in selected:
     st.write(concerts_happening_for_your_genre(genre,miles,sort=sort))
