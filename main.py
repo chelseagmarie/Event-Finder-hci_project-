@@ -123,7 +123,7 @@ def concerts_happening_for_your_genre(genre, miles, sort):
             dude_set.add(request["events"][i]["title"])
             dude_list.append(request["events"][i]["title"])
     if not dude_list:
-        st.error(f"Sorry. There are no events of {genre} in your area.")
+        st.error("Sorry. There are no events of {genre} in your area.")
         return ""
     st.info(genre)
     return dude_list
@@ -195,7 +195,7 @@ elif radio == "Date":
 # number of performers in your area vs genre
 
 @st.cache_data
-def num_performers_in_area_per_genre(genre, miles):
+def num_performances_in_area_per_genre(genre, miles):
     perf_set = set()
 
     url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&sort={sort}"
@@ -214,15 +214,15 @@ def bar_chart(selected):
     genre_lst = []
     for genre in selected:
         genre_lst.append(genre)
-        num_lst.append(num_performers_in_area_per_genre(genre, miles= None))
+        num_lst.append(num_performances_in_area_per_genre(genre, miles= None))
 
     df = pd.DataFrame({
-        "Number of performers in your area" : num_lst,
+        "Number of Performances in Your Area" : num_lst,
         "Genre" : genre_lst
     })
 
     chart = alt.Chart(df).mark_bar().encode(
-        y = 'Number of performers in your area:Q',
+        y = 'Number of Performances in Your Area:Q',
         x = "Genre:O",
     )
     
@@ -295,12 +295,11 @@ if check19:
 if check20:
     selected.append(genres_available()[20])
 
-st.write("Concerts happening for your genre!")
+st.header("Concerts happening for your genre(s)!")
 
 for genre in selected:
     st.write(concerts_happening_for_your_genre(genre,miles=None,sort=sort))
 
+st.header("Number of Performances Happening in Your Area for Your Genres")
 if selected:
     st.altair_chart(bar_chart(selected), use_container_width=True)
-
-
