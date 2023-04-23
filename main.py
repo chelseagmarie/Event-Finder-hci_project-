@@ -197,7 +197,9 @@ elif radio == "Date":
 @st.cache_data
 def num_performers_in_area_per_genre(genre, miles):
     perf_set = set()
+
     url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&sort={sort}"
+
     request = requests.get(url).json()
     #st.write(request)
     for i in range(0,len(request["events"])):
@@ -300,4 +302,5 @@ for genre in selected:
 
 if selected:
     st.altair_chart(bar_chart(selected), use_container_width=True)
+
 
