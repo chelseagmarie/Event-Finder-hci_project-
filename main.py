@@ -190,7 +190,6 @@ if radio == "Popularity":
 elif radio == "Date":
     sort = "datetime_local.desc"
 
-
 # bar chart
 # number of performers in your area vs genre
 
