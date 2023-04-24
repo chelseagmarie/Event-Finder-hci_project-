@@ -21,6 +21,7 @@ page_bg_color = """
          </style>
          """
 st.markdown(page_bg_color, unsafe_allow_html= True)
+miles = st.sidebar.slider(label="Select a distance (Mi.):",min_value=5,max_value=100,value=30,step=5)
 
 
 @st.cache_data
@@ -89,7 +90,7 @@ def get_event_date(sort, month, year):
 def venues_setlist(city_selected):
     venues_set = set()
     venues_list=[]
-    url = f"https://api.seatgeek.com/2/venues?client_id={client_ID}&city={city_selected}"
+    url = f"https://api.seatgeek.com/2/venues?client_id={client_ID}&city={city_selected}&range={miles}mi"
     info = requests.get(url).json()
     for i in range(0, len(info["venues"])):
         if info["venues"][i]["name"] not in venues_set:
@@ -114,26 +115,21 @@ def venue_eventscore(venue_name):
         score_list.append(info["events"][i]["score"])
     return score_list
 
-def table_chart(selected_city):
-    venue_names=venues_setlist(selected_city)
-    tabs=st.tabs(venue_names)
-    hi=tabs[0]
-    venue_events=[]
+def table_chart(selected_ven):
+    venue=[]
     scores=[]
-    for i in venue_names:
-        venue=[i]
-        score=[i]
-        for k in venue_eventlist(i):
-            venue.append(k)
-        for m in venue_eventscore(i):
-            score.append(m)
-        
-        scores.append(score)
-        venue_events.append(venue)
-    #for i in venue_names:
-            #st.write(venue_events)
-    df=pd.DataFrame()
-    #st.write(scores)
+    for k in venue_eventlist(selected_ven):
+        venue.append(k)
+    for m in venue_eventscore(selected_ven):
+        scores.append(m)
+    
+    if not venue:
+        st.warning(f"There are no events at {selected_ven}")
+    else:
+        st.info("Scores are ranked by popularity. The lower the score the higher the popularity")
+        df=pd.DataFrame({"Events:":venue,"Scores:":scores})
+        st.dataframe(df)
+
 
 
 @st.cache_data
@@ -202,7 +198,9 @@ def filter_perfomers_by_genre(genre):
 
 # Events
 st.title("Events Near You!")
+
 miles = st.sidebar.slider(label="Select a distance (Mi.):",min_value=5,max_value=100,value=30,step=5)
+
 @st.cache_data
 def display(selected,geoip,state,city):
     st.header("Concerts happening for your genre(s)!")
@@ -357,9 +355,15 @@ if loco=="Location(Country,State,City)":
             confirm = st.button("Confirm")
             if confirm:
                 st.subheader("List of Venues Near you!")
-                st.write(f"The venues near you are {venues_setlist(city)}")
+                lst=venues_setlist(city)
+                st.write(f"The venues near you are {lst}")
+                lst.insert(0,"")
+                selected_venue=st.selectbox("Select a Venue: ",options=lst)
+                if selected_venue != "":
+                    table_chart(selected_venue)
                 map_creator(venues_setlist_coord(city))
                 display(selected,geoip,state,city)
+                
 
 if loco =="Geolocation":
     geoip=True
