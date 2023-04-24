@@ -386,5 +386,8 @@ if loco =="Geolocation":
             Location_Dict[request["venues"][i]["location"]["lat"]] = request["venues"][i]["location"]["lon"]
     st.info(f"The venues near you are {venues}")
     locations = [(lat, lon) for lat, lon in Location_Dict.items()]
+    selected_venue=st.radio("Select a Venue: ",options=venues,key="hello")
+    if selected_venue != "":
+        table_chart(selected_venue)
     map_creator(locations)
     display(selected,geoip,state=None,city=None)
