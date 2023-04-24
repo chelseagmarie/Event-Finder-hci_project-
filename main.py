@@ -199,7 +199,6 @@ def filter_perfomers_by_genre(genre):
 # Events
 st.title("Events Near You!")
 
-miles = st.sidebar.slider(label="Select a distance (Mi.):",min_value=5,max_value=100,value=30,step=5)
 
 @st.cache_data
 def display(selected,geoip,state,city):
@@ -342,6 +341,11 @@ if check19:
 if check20:
     selected.append(genres_available()[20])
 
+def change1():
+    st.session_state['confirm']=False
+
+def change2():
+    st.session_state['confirm']=True
 
 if loco=="Location(Country,State,City)":
     geoip=False
@@ -351,17 +355,18 @@ if loco=="Location(Country,State,City)":
         state = st.selectbox("Select a State: ", options=get_state(country))
 
         if state:
-            city = st.selectbox("Select a City: ", options=get_city(state))
-            confirm = st.button("Confirm")
-            if confirm:
+            city = st.selectbox("Select a City: ", options=get_city(state), on_change=change1)
+            confirm = st.button("Confirm",on_click= change2)
+            if st.session_state['confirm']:
                 st.subheader("List of Venues Near you!")
                 lst=venues_setlist(city)
                 st.write(f"The venues near you are {lst}")
-                lst.insert(0,"")
-                selected_venue=st.selectbox("Select a Venue: ",options=lst)
+                
+                selected_venue=st.radio("Select a Venue: ",options=lst,key="yourmom")
                 if selected_venue != "":
                     table_chart(selected_venue)
                 map_creator(venues_setlist_coord(city))
+
                 display(selected,geoip,state,city)
                 
 
@@ -381,5 +386,8 @@ if loco =="Geolocation":
             Location_Dict[request["venues"][i]["location"]["lat"]] = request["venues"][i]["location"]["lon"]
     st.info(f"The venues near you are {venues}")
     locations = [(lat, lon) for lat, lon in Location_Dict.items()]
+    selected_venue=st.radio("Select a Venue: ",options=venues,key="hello")
+    if selected_venue != "":
+        table_chart(selected_venue)
     map_creator(locations)
     display(selected,geoip,state=None,city=None)
