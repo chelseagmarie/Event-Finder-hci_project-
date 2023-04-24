@@ -356,8 +356,10 @@ if loco=="Location(Country,State,City)":
             city = st.selectbox("Select a City: ", options=get_city(state))
             confirm = st.button("Confirm")
             if confirm:
+                venues = venues_setlist(city)
                 st.subheader("List of Venues Near you!")
-                st.write(f"The venues near you are {venues_setlist(city)}")
+                venues_formatted = "\n".join([f"- {venue}" for venue in venues])
+                st.text_area("Venues", value=venues_formatted, height=200)
                 map_creator(venues_setlist_coord(city))
                 display(selected,geoip,state,city)
 
