@@ -363,8 +363,10 @@ if loco=="Location(Country,State,City)":
             if st.session_state['confirm']:
                 st.subheader("List of Venues Near you!")
                 lst=venues_setlist(city)
-                st.write(f"The venues near you are {lst}")
-                
+                venues_formatted = "\n".join([f"- {venue}" for venue in lst])
+                st.text_area("Venues", value=venues_formatted, height=200)
+                # st.write(f"The venues near you are {lst}")
+
                 selected_venue=st.radio("Select a Venue: ",options=lst,key="yourmom")
                 if selected_venue != "":
                     table_chart(selected_venue)
