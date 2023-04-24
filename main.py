@@ -192,13 +192,13 @@ def concerts_happening_for_your_genre(genre,sort,geoip,state,city):
 
 
 @st.cache_data
-def filter_perfomers_by_genre(genre):
-    performers_set = set()
+def filter_perfomances_by_genre(genre):
+    performances_set = set()
     url = f"https://api.seatgeek.com/2/performers?client_id={client_ID}&genres[primary].slug={genre}"
     request = requests.get(url).json()
     for i in range(0,len(request["performers"])):
-        performers_set.add(request["performers"][i]["name"])
-    return performers_set
+        performances_set.add(request["performers"][i]["name"])
+    return performances_set
 
 
 # Events
@@ -212,9 +212,14 @@ def display(selected,geoip,state,city):
     for genre in selected:
         concerts_happening_for_your_genre(genre,sort,geoip,state,city)
 
+    
     if selected:
-        st.header("Number of Performances Happening in Your Area for Your Genres")
+        st.header("Number of Performances Happening in Your Area for Your Genre(s)")
         st.altair_chart(bar_chart(selected,geoip,state,city), use_container_width=True)
+
+    if selected:
+        st.header("Popularity of Your Genre(s) for each month")
+        line_chart(selected)
 
 loco=st.sidebar.selectbox("Search By",options={"","Location(Country,State,City)","Geolocation"})
 
@@ -232,10 +237,10 @@ elif radio == "Date":
 
 
 # bar chart
-# number of performers in your area vs genre
+# number of performances in your area vs genre
 
 @st.cache_data
-def num_performances_in_area_per_genre(genre, miles,geoip,state,city,sort):
+def num_performances_in_area_per_genre(genre,miles,geoip,state,city,sort):
     perf_set = set()
     if geoip:
         url = f"https://api.seatgeek.com/2/events?client_id={client_ID}&geoip=true&type=concert&genres[primary].slug={genre}&sort={sort}"
@@ -274,6 +279,57 @@ def bar_chart(selected,geoip,state,city):
     
     return chart
 
+
+def average_score_for_the_month_for_the_genre(month1,month2,genre):
+    perf_set = set()
+    score = 0
+    num = 0
+    url = f"https://api.seatgeek.com/2/events?datetime_utc.gte=2023-{month1}-15&datetime_utc.lte=2023-{month2}-15&client_id={client_ID}&type=concert&genres[primary].slug={genre}"
+    
+
+    request = requests.get(url).json()
+    #st.write(request)
+    for i in range(0,len(request["events"])):
+        if request["events"][i]["title"] not in perf_set:
+            perf_set.add(request["events"][i]["title"])
+            score+=(request["events"][i]["score"])
+            num +=1
+    #st.write(score)
+    if not perf_set:
+        return 0
+    return score/num
+
+def average_scores_for_all_months_for_the_genre(genre):
+    average_score_for_all_months = []
+    month1 = ["01","02","03","04","05","06","07","08","09","10","11","12"]
+    month2 = ["02","03","04","05","06","07","08","09","10","11","12","01"]
+    for index in range(0,len(month1)):
+        average_score_for_all_months.append(average_score_for_the_month_for_the_genre(month1[index],month2[index],genre))
+    
+    return average_score_for_all_months
+
+
+
+# scores vs time
+# popularity of your genre  vs time
+def line_chart(selected):
+    average_score_for_all_months_all_genres = []
+    months=["Jan 15","Feb 15","Mar 15","Apr 15","May 15","Jun 15","Jul 15","Aug 15","Sep 15","Oct 15","Nov 15","Dec 15"]
+    genre_lst = []
+    temp_dict={}
+    if selected:
+        for genre in selected:
+            temp_dict[genre]=average_scores_for_all_months_for_the_genre(genre)
+            genre_lst.append(genre)
+            average_score_for_all_months_all_genres.append(average_scores_for_all_months_for_the_genre(genre))
+        #st.write(average_score_for_all_months_all_genres)
+        #st.write(genre_lst)
+
+
+        data = pd.DataFrame(temp_dict,columns=genre_lst
+        )
+        
+        st.line_chart(data)
 
 st.sidebar.write("Check Genre(s) of Interest")
 check0 = st.sidebar.checkbox(genres_available()[0])
