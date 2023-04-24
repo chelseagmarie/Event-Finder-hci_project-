@@ -341,6 +341,9 @@ if check19:
 if check20:
     selected.append(genres_available()[20])
 
+if 'confirm' not in st.session_state:
+    st.session_state['confirm']=False
+
 def change1():
     st.session_state['confirm']=False
 
@@ -384,7 +387,10 @@ if loco =="Geolocation":
             venues_set.add(request["venues"][i]["name"])
             venues.append(request["venues"][i]["name"])
             Location_Dict[request["venues"][i]["location"]["lat"]] = request["venues"][i]["location"]["lon"]
-    st.info(f"The venues near you are {venues}")
+    venues_formatted = "\n".join([f"- {venue}" for venue in venues])
+    st.subheader("List of Venues Near you!")
+    st.text_area("Venues", value=venues_formatted, height=200)
+    # st.info(f"The venues near you are {venues}")
     locations = [(lat, lon) for lat, lon in Location_Dict.items()]
     selected_venue=st.radio("Select a Venue: ",options=venues,key="hello")
     if selected_venue != "":
